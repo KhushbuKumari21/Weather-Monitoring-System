@@ -1,7 +1,12 @@
 import logging
 import argparse
-from src.weather_service import WeatherService
+import os
+from weather_service import WeatherService  
+from weather_db_mysql import insert_summaries
+from tenacity import retry, stop_after_attempt, wait_exponential
+import requests
 
+# Set up logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def parse_arguments():
@@ -31,19 +36,31 @@ def test_temperature_alerts():
     alerts = check_temperature_alert(test_data, threshold)
     assert alerts == ["Alert! Los Angeles has reached 40°C, exceeding the threshold of 35°C."]
 
+class WeatherService:
+    def __init__(self, api_key, locations):
+        self.api_key = api_key
+        self.locations = locations
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=4, max=10))
+    def fetch_weather_data(self, location):
+        response = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={location}&appid={self.api_key}&units=metric')
+        response.raise_for_status()  # Raise an error for bad responses
+        return response.json()
+
 if __name__ == "__main__":
     args = parse_arguments()
     locations = args.locations
     temperature_threshold = args.threshold
-    api_key = "6d01d8032b8b2e700a1279d7bbba7a51"
+    api_key = os.getenv('6d01d8032b8b2e700a1279d7bbba7a51')  # Use environment variable for the API key
 
     weather_data = {}
     weather_service = WeatherService(api_key, locations)
 
     for location in locations:
-        data = weather_service.fetch_weather_data(location) 
+        data = weather_service.fetch_weather_data(location)
         if data:
-            weather_data[location] = data  
+            weather_data[location] = data
+            logging.info(f"Fetched weather data for {location}.")  
         else:
             logging.warning(f"Failed to fetch weather data for {location}.")
 
