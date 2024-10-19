@@ -1,0 +1,8 @@
+requests
+matplotlib
+pandas
+mysql-connector-python
+tenacity
+requests
+numpy
+matplotlib

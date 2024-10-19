@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  weather-monitor:
+    build: .
+    volumes:
+      - .:/app  # Mount the current directory to /app in the container
+    environment:
+      - API_KEY=6d01d8032b8b2e700a1279d7bbba7a51  # Use your actual API key here
+    ports:
+      - "5000:5000"  # Expose port 5000 for the web server
+    restart: always  # Automatically restart the container if it stops
