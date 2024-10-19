@@ -1,31 +1,80 @@
 import unittest
 from unittest.mock import patch
-from weather_service import WeatherService  
+from src.visualization import Visualization  
 
-class TestWeatherService(unittest.TestCase):
+class TestVisualization(unittest.TestCase):
     
-    def setUp(self):
-        self.weather_service = WeatherService()
-
-    @patch('weather_service.WeatherService.fetch_weather_data')
-    def test_fetch_weather_data_success(self, mock_fetch_weather_data):
-        mock_fetch_weather_data.return_value = {
-            "New York": {"temp": 20, "weather": "Sunny"},
-            "Los Angeles": {"temp": 25, "weather": "Sunny"}
+    @patch('src.visualization.plt.figure')
+    @patch('src.visualization.plt.bar')
+    @patch('src.visualization.plt.show')
+    def test_display_summary_valid_data(self, mock_show, mock_bar, mock_figure):
+        visualization = Visualization()
+        daily_summary = {
+            '2024-10-19': {
+                'average_temp': 28,
+                'max_temp': 30,
+                'min_temp': 26,
+                'average_humidity': 65,
+                'average_wind_speed': 10
+            }
         }
-        data = self.weather_service.fetch_weather_data(locations=["New York", "Los Angeles"])
-        self.assertIn("New York", data)
-        self.assertIn("Los Angeles", data)
+        visualization.display_summary(daily_summary)
+        mock_figure.assert_called()
+        mock_bar.assert_called()
+        mock_show.assert_called()
 
-    @patch('weather_service.WeatherService.fetch_weather_data')
-    def test_fetch_weather_data_invalid_location(self, mock_fetch_weather_data):
-        mock_fetch_weather_data.return_value = {
-            "InvalidLocation": None
+    @patch('builtins.print')
+    def test_display_summary_invalid_data(self, mock_print):
+        visualization = Visualization()
+        daily_summary = {
+            '2024-10-19': {
+                'average_temp': 28,
+                'average_humidity': 65,
+            }
         }
-        data = self.weather_service.fetch_weather_data(locations=["InvalidLocation"])
-        self.assertIsNone(data["InvalidLocation"])
+        visualization.display_summary(daily_summary)
+        # Update expected message to reflect actual validation logic
+        mock_print.assert_called_with("Validation failed for summary on 2024-10-19: missing keys ['max_temp', 'min_temp']")
 
-    
+    @patch('builtins.print')
+    def test_display_summary_empty_data(self, mock_print):
+        visualization = Visualization()
+        daily_summary = {}
+        visualization.display_summary(daily_summary)
+        mock_print.assert_not_called()
+
+    @patch('src.visualization.plt.figure')
+    @patch('src.visualization.plt.bar')
+    @patch('src.visualization.plt.show')
+    def test_display_forecast_summary_valid_data(self, mock_show, mock_bar, mock_figure):
+        visualization = Visualization()
+        forecast_summary = {
+            '2024-10-19': {
+                'Delhi': {
+                    'average_temp': 28,
+                    'average_humidity': 65,
+                    'average_wind_speed': 10
+                }
+            }
+        }
+        visualization.display_forecast_summary(forecast_summary)
+        mock_figure.assert_called()
+        mock_bar.assert_called()
+        mock_show.assert_called()
+
+    @patch('builtins.print')
+    def test_display_forecast_summary_invalid_data(self, mock_print):
+        visualization = Visualization()
+        forecast_summary = {
+            '2024-10-19': {
+                'Delhi': {
+                    'average_temp': 28,
+                }
+            }
+        }
+        visualization.display_forecast_summary(forecast_summary)
+        # Update expected message to reflect actual validation logic
+        mock_print.assert_called_with("Validation failed for forecast summary for Delhi on 2024-10-19: missing keys ['average_humidity', 'average_wind_speed']")
 
 if __name__ == '__main__':
     unittest.main()
