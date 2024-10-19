@@ -2,9 +2,9 @@ import time
 import json
 import logging
 import requests  
-from src.weather_service import WeatherService
-from src.alert_service import AlertService
-from src.visualization import Visualization
+from weather_service import WeatherService
+from visualization import Visualization
+from alert_service import AlertService
 
 # Load configuration
 with open('config.json', 'r') as config_file:
@@ -51,7 +51,6 @@ def main():
             logging.error("An unexpected error occurred: %s", str(e))
             continue
 
-        
         if DURATION and (time.time() - start_time) > DURATION:
             logging.info("Monitoring ended after specified duration of %s seconds.", DURATION)
             break
