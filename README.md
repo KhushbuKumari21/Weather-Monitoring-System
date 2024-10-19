@@ -33,8 +33,11 @@ Develop a real-time data processing system to monitor weather conditions and pro
   
 5. Run the database setup script:
    python src/weather_db_mysql.py
-6. Run Application
-   python main.py
+   
+7. Run Application
+   1.cd weather-monitoring-system
+   2.cd D:\weather-monitoring-system\src
+   3. python main.py
 
    
 
