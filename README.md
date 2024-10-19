@@ -38,10 +38,6 @@ Develop a real-time data processing system to monitor weather conditions and pro
    1.cd weather-monitoring-system
    2.cd D:\weather-monitoring-system\src
    3. python main.py
-
-   
-
-
  
 ## Running with Docker
 1. Build the Docker image:
