@@ -2,6 +2,7 @@ import mysql.connector
 import logging
 from datetime import datetime
 
+# Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def create_connection():
@@ -59,20 +60,20 @@ def insert_summaries(data):
                 (str(date), location, avg_temp, max_temp, min_temp, dominant_condition)
                 for (date, location, avg_temp, max_temp, min_temp, dominant_condition) in data
             ]
-            cursor.executemany('''
-                INSERT INTO daily_weather_summary (date, location, avg_temp, max_temp, min_temp, dominant_condition)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                ON DUPLICATE KEY UPDATE 
-                    avg_temp = VALUES(avg_temp),
-                    max_temp = VALUES(max_temp),
-                    min_temp = VALUES(min_temp),
-                    dominant_condition = VALUES(dominant_condition);
-            ''', formatted_data)
+            logging.debug(f"Data to insert: {formatted_data}")  # Log the data being inserted
+            
+            cursor.executemany('''INSERT INTO daily_weather_summary (date, location, avg_temp, max_temp, min_temp, dominant_condition)
+                                  VALUES (%s, %s, %s, %s, %s, %s)
+                                  ON DUPLICATE KEY UPDATE 
+                                      avg_temp = VALUES(avg_temp),
+                                      max_temp = VALUES(max_temp),
+                                      min_temp = VALUES(min_temp),
+                                      dominant_condition = VALUES(dominant_condition);''',
+                               formatted_data)
             conn.commit()
             logging.info("Inserted or updated summary data successfully.")
     except mysql.connector.Error as e:
         logging.error(f"Failed to insert summaries into daily_weather_summary: {e}")
-
 
 def get_average_temperature(location):
     conn = create_connection()
@@ -82,9 +83,7 @@ def get_average_temperature(location):
     with conn:
         cursor = conn.cursor()
         try:
-            cursor.execute('''
-                SELECT AVG(avg_temp) FROM daily_weather_summary WHERE location = %s
-            ''', (location,))
+            cursor.execute('''SELECT AVG(avg_temp) FROM daily_weather_summary WHERE location = %s''', (location,))
             avg_temp = cursor.fetchone()
             return avg_temp[0] if avg_temp else None
         except mysql.connector.Error as e:
@@ -93,6 +92,7 @@ def get_average_temperature(location):
 
 if __name__ == "__main__":
     create_tables()
+    
     weather_data = [
         ('2024-10-17', 'New York', 65.0, 70.0, 60.0, 'Sunny'),
         ('2024-10-17', 'Los Angeles', 75.0, 80.0, 70.0, 'Clear'),
@@ -101,4 +101,10 @@ if __name__ == "__main__":
         ('2024-10-20', 'Delhi', 22.0, 24.0, 20.0, 'Cloudy'),
         ('2024-10-20', 'Kolkata', 30.0, 32.0, 28.0, 'Rainy')
     ]
+    
     insert_summaries(weather_data)
+
+    # Example of retrieving average temperature
+    location = 'New York'
+    avg_temp = get_average_temperature(location)
+    logging.info(f"Average temperature in {location}: {avg_temp}")
