@@ -1,13 +1,15 @@
-import time
+import os
 import json
 import logging
 import requests  
 from weather_service import WeatherService
-from visualization import Visualization
 from alert_service import AlertService
+from weather_visualization import Visualization
+import time
 
 # Load configuration
-with open('config.json', 'r') as config_file:
+config_path = os.path.join(os.path.dirname(__file__), 'config.json')
+with open(config_path, 'r') as config_file:
     config = json.load(config_file)
 
 API_KEY = config['API_KEY']
